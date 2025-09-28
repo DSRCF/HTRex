@@ -1,0 +1,32 @@
+# ===================================================================
+# Python specific ignores
+# ===================================================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# ===================================================================
+# Top-level folders from your project
+# ===================================================================
+ch_PP-OCRv4_det_infer/
+ch_PP-OCRv4_rec_infer/
+model_cache/
+temp_uploads/
+.env
+
+
+# ===================================================================
+# Visual Studio / .NET ignores (This is the important new part)
+# ===================================================================
+## Visual Studio cache files
+.vs/
+
+## Build results
+[Bb]in/
+[Oo]bj/
+
+## User-specific files
+*.suo
+*.user```

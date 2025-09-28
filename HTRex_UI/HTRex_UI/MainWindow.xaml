@@ -1,0 +1,142 @@
+﻿<mah:MetroWindow x:Class="HTRex_UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:HTRex_UI"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    mc:Ignorable="d"
+    Title="HTRex - Handwritten Text Recognition and Extraction" Height="750" Width="950"
+    WindowStartupLocation="CenterScreen"
+    GlowBrush="{DynamicResource MahApps.Brushes.Accent}"
+    BorderThickness="1"
+    BorderBrush="{DynamicResource MahApps.Brushes.Accent}">
+
+    <mah:MetroWindow.IconTemplate>
+        <DataTemplate>
+            <iconPacks:PackIconMaterial Kind="Scanner" Margin="4" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </DataTemplate>
+    </mah:MetroWindow.IconTemplate>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- For Controls -->
+            <RowDefinition Height="*"/>
+            <!-- For Image Display & Boxes -->
+            <RowDefinition Height="Auto"/>
+            <!-- For Result Text -->
+        </Grid.RowDefinitions>
+
+        <!-- Top Controls Area -->
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,10">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <Button x:Name="LoadImageButton"
+                        Click="LoadImageButton_Click"
+                        Style="{StaticResource MahApps.Styles.Button.Square.Accent}"
+                        Margin="0,0,10,0"
+                        ToolTip="Load an image for text recognition">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="ImagePlus" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Load Image" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="ProcessImageButton"
+                        IsEnabled="False"
+                        Click="ProcessImageButton_Click"
+                        Style="{StaticResource MahApps.Styles.Button.Square}"
+                        ToolTip="Recognize text from the loaded image"
+                        Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="PlayCircleOutline" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Recognise Text" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <mah:ProgressRing x:Name="LoadingIndicator" IsActive="False" Width="25" Height="25"
+                                  Foreground="{DynamicResource MahApps.Brushes.Accent}"
+                                  VerticalAlignment="Center"/>
+                <Button x:Name="RotateImageButton"
+                        Click="RotateImageButton_Click"
+                        Style="{StaticResource MahApps.Styles.Button.Square}"
+                        ToolTip="Rotate Image Left"
+                        Margin="10,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="RotateLeft" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Rotate" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="ResetViewButton"
+                        Click="ResetViewButton_Click"
+                        Style="{StaticResource MahApps.Styles.Button.Square}"
+                        ToolTip="Reset Image Zoom and Rotation"
+                        Margin="10,0,0,0" IsEnabled="False">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconMaterial Kind="Refresh" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Reset View" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                <!-- New StackPanel for CheckBoxes -->
+                <CheckBox x:Name="UseAiImprovementCheckBox" 
+                          Content="Use AI Text Correction &amp; Summarization"
+                          IsChecked="True" Style="{StaticResource MahApps.Styles.CheckBox}"
+                          Margin="0,0,15,0"/>
+                <CheckBox x:Name="ShowBoundingBoxesCheckBox" 
+                          Content="Show Bounding Boxes"
+                          IsChecked="False" Style="{StaticResource MahApps.Styles.CheckBox}"
+                          Checked="ShowBoundingBoxesCheckBox_Changed" 
+                          Unchecked="ShowBoundingBoxesCheckBox_Changed"
+                          IsEnabled="False"/>
+                <!-- Initially disabled until boxes are available -->
+            </StackPanel>
+        </StackPanel>
+
+
+        <!-- Image Display Area with Canvas for Bounding Boxes -->
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="{DynamicResource MahApps.Brushes.Gray7}" CornerRadius="3" Background="#FFEFEFEF" ClipToBounds="True">
+            <ScrollViewer x:Name="ImageScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                          PreviewMouseWheel="ImageScrollViewer_PreviewMouseWheel">
+                <Grid x:Name="ImageContainerGrid"
+                      HorizontalAlignment="Left" 
+                      VerticalAlignment="Top"   
+                      Background="Transparent" 
+                      MouseLeftButtonDown="ImageContainerGrid_MouseLeftButtonDown"
+                      MouseLeftButtonUp="ImageContainerGrid_MouseLeftButtonUp"
+                      MouseMove="ImageContainerGrid_MouseMove"
+                      RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="ContentScaleTransform" ScaleX="1" ScaleY="1"/>
+                            <RotateTransform x:Name="ContentRotateTransform" Angle="0"/>
+                        </TransformGroup>
+                    </Grid.RenderTransform>
+
+                    <Image x:Name="DisplayedImage" Stretch="None" />
+                    <Canvas x:Name="BoundingBoxCanvas" />
+                </Grid>
+            </ScrollViewer>
+        </Border>
+
+
+        <!-- Result Display Area -->
+        <GroupBox Grid.Row="2" Header="Recognition Results" Margin="0,15,0,0"
+                  Style="{DynamicResource MahApps.Styles.GroupBox}"
+                  mah:HeaderedControlHelper.HeaderFontSize="16"
+                  mah:ControlsHelper.ContentCharacterCasing="Normal">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="250">
+                <TextBox x:Name="ResultTextBox"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         MinHeight="100"
+                         mah:TextBoxHelper.Watermark="Recognition results will appear here..."
+                         mah:TextBoxHelper.UseFloatingWatermark="False"
+                         Style="{StaticResource MahApps.Styles.TextBox}"
+                         AcceptsReturn="True"
+                         Padding="5"/>
+            </ScrollViewer>
+        </GroupBox>
+    </Grid>
+</mah:MetroWindow>
